@@ -1,0 +1,17 @@
+.ui-card {
+  background-color: var(--color-surface-bg);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-subtle);
+}
+
+.ui-card--bordered-strong {
+  border-color: var(--color-border-strong);
+}
+
+.ui-card--subdued {
+  background-color: var(--color-surface-subdued);
+  border-color: var(--color-border-default);
+}
+

@@ -5,6 +5,7 @@ import com.campus.lostfound.dto.LocationCountReportResponse;
 import com.campus.lostfound.dto.UnclaimedItemDetailResponse;
 import com.campus.lostfound.service.AnalyticsService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,10 +14,12 @@ import java.util.List;
 
 /**
  * REST controller serving analytical reports and summaries generated via Spring JDBC.
+ * Restricted strictly to campus administrators.
  * Base path: /api/analytics
  */
 @RestController
 @RequestMapping("/api/analytics")
+@PreAuthorize("hasRole('ADMIN')")
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;

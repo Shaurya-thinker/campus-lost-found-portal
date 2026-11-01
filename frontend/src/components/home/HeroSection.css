@@ -1,0 +1,112 @@
+.hero-section {
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.hero-content {
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--color-cobalt);
+}
+
+.hero-headline {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: var(--line-height-tight);
+  color: var(--color-navy);
+}
+
+.hero-subtext {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+  max-width: 660px;
+}
+
+.hero-search-form {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  width: 100%;
+  max-width: 620px;
+}
+
+.hero-search-input-wrapper {
+  flex: 1;
+}
+
+.hero-search-input {
+  width: 100%;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-bg);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  min-height: 46px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.hero-search-input:focus {
+  outline: none;
+  border-color: var(--color-cobalt);
+  box-shadow: 0 0 0 3px var(--color-cobalt-subtle);
+}
+
+.hero-search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.hero-entry-points {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.hero-entry-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  font-weight: var(--font-weight-medium);
+  margin-right: var(--space-1);
+}
+
+@media (max-width: 640px) {
+  .hero-section {
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-8);
+  }
+
+  .hero-search-form {
+    flex-direction: column;
+  }
+
+  .hero-search-form button {
+    width: 100%;
+  }
+
+  .hero-entry-points {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-entry-points button {
+    width: 100%;
+  }
+}
+

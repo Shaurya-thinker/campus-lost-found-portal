@@ -1,0 +1,84 @@
+/* ==========================================================================
+   Login Page Styles — Campus Lost & Found Portal
+   Editorial, restrained design system matching university credentials portal.
+   ========================================================================== */
+
+.login-page {
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-16);
+  background-color: var(--color-canvas-bg);
+  min-height: calc(100vh - 160px);
+}
+
+.login-card-wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.login-title {
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-navy);
+  margin: 0 0 var(--space-2) 0;
+  line-height: var(--line-height-tight);
+}
+
+.login-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: var(--line-height-relaxed);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.login-error-banner {
+  background-color: var(--color-status-danger-bg);
+  border: 1px solid var(--color-status-danger-border);
+  color: var(--color-status-danger-text);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.login-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.login-footer-links {
+  text-align: center;
+  margin-top: var(--space-6);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.login-link-btn {
+  background: none;
+  border: none;
+  color: var(--color-cobalt);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-size: inherit;
+}
+
+.login-link-btn:hover {
+  color: var(--color-cobalt-hover);
+}
+

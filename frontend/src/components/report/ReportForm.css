@@ -1,0 +1,315 @@
+/* ==========================================================================
+   Report Submission Form Styles
+   ========================================================================== */
+
+.report-form-page {
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-16);
+}
+
+.report-form-header {
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border-default);
+  padding-bottom: var(--space-4);
+}
+
+.report-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: var(--space-3);
+  font-family: var(--font-family-sans);
+}
+
+.report-back-btn:hover {
+  color: var(--color-navy);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.report-form-title {
+  font-size: var(--font-size-3xl);
+  color: var(--color-navy);
+  margin-bottom: var(--space-2);
+}
+
+.report-form-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  max-width: 680px;
+  line-height: var(--line-height-normal);
+}
+
+/* Card Container */
+.report-form-card {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.report-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Type Selector Segmented Control */
+.type-selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.type-selector-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-navy);
+}
+
+.type-selector-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.type-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-bg);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+  font-family: var(--font-family-sans);
+}
+
+.type-option-btn:hover:not(:disabled) {
+  border-color: var(--color-navy);
+  background-color: var(--color-surface-hover);
+}
+
+.type-option-btn--active {
+  border-color: var(--color-cobalt);
+  background-color: var(--color-cobalt-subtle);
+  box-shadow: 0 0 0 1px var(--color-cobalt);
+}
+
+.type-option-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-navy);
+}
+
+.type-option-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Textarea styling matching Input component tokens */
+.ui-textarea-field {
+  width: 100%;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-bg);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  min-height: 100px;
+  resize: vertical;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ui-textarea-field:focus {
+  outline: none;
+  border-color: var(--color-cobalt);
+  box-shadow: 0 0 0 3px var(--color-cobalt-subtle);
+}
+
+.ui-textarea-field--error {
+  border-color: var(--color-status-danger-text);
+  background-color: #FFFDFD;
+}
+
+.ui-textarea-field:disabled {
+  background-color: var(--color-surface-subdued);
+  border-color: var(--color-border-default);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+/* User Identity Notice Card */
+.identity-notice-box {
+  background-color: var(--color-surface-subdued);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.identity-notice-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-navy);
+  margin-bottom: var(--space-1);
+}
+
+/* Identified Student Active Session Card */
+.identified-student-box {
+  background-color: var(--color-surface-subdued);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.identified-student-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.identified-student-badge {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-navy);
+}
+
+.identified-student-id {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  background-color: var(--color-surface-bg);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-cobalt);
+  font-weight: var(--font-weight-semibold);
+}
+
+.identified-student-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.identified-student-email {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-normal);
+}
+
+.identified-student-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* Actions Row */
+.report-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-default);
+}
+
+/* Alert Notification Banner */
+.form-alert {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.form-alert--danger {
+  background-color: var(--color-status-danger-bg);
+  border: 1px solid var(--color-status-danger-border);
+  color: var(--color-status-danger-text);
+}
+
+/* Success Card */
+.report-success-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  max-width: 600px;
+  margin: var(--space-8) auto;
+}
+
+.report-success-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  color: var(--color-navy);
+}
+
+.report-success-details {
+  background-color: var(--color-canvas-bg);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.report-success-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.report-success-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .type-selector-options {
+    grid-template-columns: 1fr;
+  }
+
+  .report-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .report-form-actions button {
+    width: 100%;
+  }
+
+  .report-success-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .report-success-actions button {
+    width: 100%;
+  }
+}
+

@@ -1,0 +1,117 @@
+/* ==========================================================================
+   My Claims View Styles
+   ========================================================================== */
+
+.my-claims-page {
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-16);
+}
+
+.my-claims-header {
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border-default);
+  padding-bottom: var(--space-4);
+}
+
+.my-claims-title {
+  font-size: var(--font-size-3xl);
+  color: var(--color-navy);
+  margin-bottom: var(--space-2);
+}
+
+.my-claims-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  max-width: 680px;
+  line-height: var(--line-height-normal);
+}
+
+.my-claims-lookup-card {
+  max-width: 640px;
+  margin-bottom: var(--space-8);
+}
+
+.my-claims-lookup-form {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.my-claims-lookup-input-wrapper {
+  flex: 1;
+}
+
+.my-claims-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 800px;
+}
+
+.claim-record-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.claim-record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.claim-record-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  color: var(--color-navy);
+}
+
+.claim-record-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.claim-record-desc-box {
+  background-color: var(--color-canvas-bg);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-default);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-normal);
+}
+
+.claim-record-status-note {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+}
+
+.claim-record-status-note--pending {
+  color: var(--color-status-warning-text);
+}
+
+.claim-record-status-note--approved {
+  color: var(--color-status-success-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.claim-record-status-note--rejected {
+  color: var(--color-status-danger-text);
+}
+
+@media (max-width: 640px) {
+  .my-claims-lookup-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .my-claims-lookup-form button {
+    width: 100%;
+  }
+}
+

@@ -12,7 +12,7 @@ public class ClaimSubmissionRequest {
     @NotNull(message = "Item report ID is required")
     private Long itemReportId;
 
-    @NotNull(message = "Claimant ID is required")
+    // Optional: Ignored and derived server-side from the authenticated principal
     private Long claimantId;
 
     @NotBlank(message = "Description is required")
@@ -20,6 +20,11 @@ public class ClaimSubmissionRequest {
     private String description;
 
     public ClaimSubmissionRequest() {
+    }
+
+    public ClaimSubmissionRequest(Long itemReportId, String description) {
+        this.itemReportId = itemReportId;
+        this.description = description;
     }
 
     public ClaimSubmissionRequest(Long itemReportId, Long claimantId, String description) {

@@ -30,10 +30,19 @@ public class ItemReportCreateRequest {
     @NotNull(message = "Report type is required (LOST or FOUND)")
     private ReportType reportType;
 
-    @NotNull(message = "Reporter ID is required")
+    // Optional: Ignored and derived server-side from the authenticated principal
     private Long reporterId;
 
     public ItemReportCreateRequest() {
+    }
+
+    public ItemReportCreateRequest(String title, String description, String category,
+                                   String location, ReportType reportType) {
+        this.title = title;
+        this.description = description;
+        this.category = category;
+        this.location = location;
+        this.reportType = reportType;
     }
 
     public ItemReportCreateRequest(String title, String description, String category,

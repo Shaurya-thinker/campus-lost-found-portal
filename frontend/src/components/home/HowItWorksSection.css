@@ -1,0 +1,100 @@
+.how-it-works-section {
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
+  border-top: 1px solid var(--color-border-default);
+  background-color: var(--color-surface-bg);
+}
+
+.how-it-works-header {
+  margin-bottom: var(--space-8);
+  max-width: 680px;
+}
+
+.how-it-works-eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--color-cobalt);
+  display: inline-block;
+  margin-bottom: var(--space-1);
+}
+
+.how-it-works-header h2 {
+  font-size: var(--font-size-3xl);
+  color: var(--color-navy);
+}
+
+.how-it-works-header p {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-2);
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  margin-bottom: var(--space-10);
+}
+
+.step-card {
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-canvas-bg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.step-number {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-cobalt);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.step-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  color: var(--color-navy);
+}
+
+.step-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+/* Informational Report Notice Box */
+.report-notice-card {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-6);
+  background-color: var(--color-surface-subdued);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.report-notice-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  color: var(--color-navy);
+}
+
+.report-notice-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+@media (max-width: 768px) {
+  .steps-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+}
+

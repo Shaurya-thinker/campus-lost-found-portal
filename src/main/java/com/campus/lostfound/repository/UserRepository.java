@@ -27,5 +27,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return Optional containing the User if found, or empty
      */
     Optional<User> findByEmail(String email);
+
+    /**
+     * Checks if a user already exists with the given college UID (case-insensitive).
+     *
+     * @param collegeUid student college UID
+     * @return true if an existing user has this UID, false otherwise
+     */
+    boolean existsByCollegeUidIgnoreCase(String collegeUid);
+
+    /**
+     * Retrieves a user by their college UID (case-insensitive).
+     *
+     * @param collegeUid student college UID
+     * @return Optional containing the User if found, or empty
+     */
+    Optional<User> findByCollegeUidIgnoreCase(String collegeUid);
 }
 

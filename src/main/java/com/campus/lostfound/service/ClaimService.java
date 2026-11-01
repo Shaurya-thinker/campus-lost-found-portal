@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Service managing claims submitted for found items, verifying ownership, and handling approvals.
@@ -52,11 +53,19 @@ public class ClaimService {
      */
     @Transactional
     public Claim submitClaim(Long itemReportId, Long claimantId, String description) {
+        ItemReport itemReport = itemReportRepository.findById(itemReportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Item report not found with id: " + itemReportId));
+
         User claimant = userRepository.findById(claimantId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + claimantId));
 
-        ItemReport itemReport = itemReportRepository.findById(itemReportId)
-                .orElseThrow(() -> new ResourceNotFoundException("Item report not found with id: " + itemReportId));
+        if (itemReport.getReporter() != null && Objects.equals(itemReport.getReporter().getId(), claimant.getId())) {
+            throw new BusinessRuleException("A user cannot submit a claim for an item they reported themselves.");
+        }
+
+        if (claimRepository.existsByItemReportIdAndClaimantId(itemReportId, claimantId)) {
+            throw new DuplicateResourceException("User has already submitted a claim for this item report.");
+        }
 
         if (itemReport.getReportType() != ReportType.FOUND) {
             throw new BusinessRuleException("Claims can only be submitted for FOUND items.");
@@ -64,14 +73,6 @@ public class ClaimService {
 
         if (itemReport.getStatus() != ItemStatus.REPORTED) {
             throw new BusinessRuleException("Claims can only be submitted for items with REPORTED status.");
-        }
-
-        if (itemReport.getReporter().getId().equals(claimant.getId())) {
-            throw new BusinessRuleException("A user cannot submit a claim for an item they reported themselves.");
-        }
-
-        if (claimRepository.existsByItemReportIdAndClaimantId(itemReportId, claimantId)) {
-            throw new DuplicateResourceException("User has already submitted a claim for this item report.");
         }
 
         Claim claim = new Claim();

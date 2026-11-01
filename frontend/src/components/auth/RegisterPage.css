@@ -1,0 +1,162 @@
+/* ==========================================================================
+   Student Registration Page Styles
+   ========================================================================== */
+
+.register-page {
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-16);
+}
+
+.register-header {
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border-default);
+  padding-bottom: var(--space-4);
+}
+
+.register-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: var(--space-3);
+  font-family: var(--font-family-sans);
+}
+
+.register-back-btn:hover {
+  color: var(--color-navy);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.register-title {
+  font-size: var(--font-size-3xl);
+  color: var(--color-navy);
+  margin-bottom: var(--space-2);
+}
+
+.register-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.register-card {
+  max-width: 580px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.register-notice-box {
+  background-color: var(--color-surface-subdued);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.register-notice-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-navy);
+  margin-bottom: var(--space-1);
+}
+
+.register-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-default);
+}
+
+/* Success Card */
+.register-success-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  max-width: 560px;
+  margin: var(--space-8) auto;
+}
+
+.register-success-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  color: var(--color-navy);
+}
+
+.register-success-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.register-success-details {
+  background-color: var(--color-canvas-bg);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.register-success-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.register-detail-label {
+  color: var(--color-text-muted);
+}
+
+.register-detail-val {
+  color: var(--color-text-primary);
+}
+
+.register-success-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .register-actions {
+    flex-direction: column-reverse;
+  }
+
+  .register-actions button {
+    width: 100%;
+  }
+
+  .register-success-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .register-success-actions button {
+    width: 100%;
+  }
+}
+

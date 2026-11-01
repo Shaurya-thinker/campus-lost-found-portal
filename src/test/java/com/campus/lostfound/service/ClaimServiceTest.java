@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -79,39 +80,47 @@ class ClaimServiceTest {
     @DisplayName("Should reject claim when item report type is LOST")
     void testSubmitClaim_CannotClaimLostItem() {
         foundReport.setReportType(ReportType.LOST);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(claimant));
         when(itemReportRepository.findById(10L)).thenReturn(Optional.of(foundReport));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(claimant));
 
         assertThrows(BusinessRuleException.class, () -> claimService.submitClaim(10L, 2L, "My lost item"));
+        verify(claimRepository, never()).save(any(Claim.class));
     }
 
     @Test
     @DisplayName("Should reject claim when item status is not REPORTED")
     void testSubmitClaim_CannotClaimAlreadyClaimedItem() {
         foundReport.setStatus(ItemStatus.CLAIMED);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(claimant));
         when(itemReportRepository.findById(10L)).thenReturn(Optional.of(foundReport));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(claimant));
 
         assertThrows(BusinessRuleException.class, () -> claimService.submitClaim(10L, 2L, "Description"));
+        verify(claimRepository, never()).save(any(Claim.class));
     }
 
     @Test
-    @DisplayName("Should reject claim when user attempts to claim their own report")
+    @DisplayName("Should reject claim when user attempts to claim their own report and not save")
     void testSubmitClaim_CannotClaimOwnReport() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(reporter));
         when(itemReportRepository.findById(10L)).thenReturn(Optional.of(foundReport));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(reporter));
 
-        assertThrows(BusinessRuleException.class, () -> claimService.submitClaim(10L, 1L, "Claiming own item"));
+        BusinessRuleException exception = assertThrows(
+                BusinessRuleException.class,
+                () -> claimService.submitClaim(10L, 1L, "Claiming own item")
+        );
+        assertEquals("A user cannot submit a claim for an item they reported themselves.", exception.getMessage());
+        verify(claimRepository, never()).save(any(Claim.class));
     }
 
     @Test
-    @DisplayName("Should reject duplicate claim by the same claimant for the same item")
+    @DisplayName("Should reject duplicate claim by the same claimant for the same item and not save")
     void testSubmitClaim_DuplicateClaim() {
-        when(userRepository.findById(2L)).thenReturn(Optional.of(claimant));
         when(itemReportRepository.findById(10L)).thenReturn(Optional.of(foundReport));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(claimant));
         when(claimRepository.existsByItemReportIdAndClaimantId(10L, 2L)).thenReturn(true);
 
         assertThrows(DuplicateResourceException.class, () -> claimService.submitClaim(10L, 2L, "Second attempt"));
+        verify(claimRepository, never()).save(any(Claim.class));
     }
 
     @Test

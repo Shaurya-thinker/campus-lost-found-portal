@@ -59,4 +59,10 @@ application-local.properties
 application-secrets.properties
 application-secret.properties
 
+# Frontend build and dependencies
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+
 

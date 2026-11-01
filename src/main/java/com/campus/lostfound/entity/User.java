@@ -1,7 +1,10 @@
 package com.campus.lostfound.entity;
 
+import com.campus.lostfound.entity.enums.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,6 +23,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "college_uid", unique = true, length = 50)
+    private String collegeUid;
+
     @NotBlank(message = "Name is required")
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -29,21 +35,42 @@ public class User {
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
+    @Column(name = "password_hash", length = 255)
+    private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    private Role role = Role.STUDENT;
+
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled = true;
+
     // Default no-argument constructor required by JPA
     public User() {
     }
 
-    // Parameterized constructor for creating new users
+    // Parameterized constructor for creating legacy/basic users
     public User(String name, String email) {
         this.name = name;
         this.email = email;
+        this.role = Role.STUDENT;
     }
 
-    // Full constructor
+    // Full constructor for basic user
     public User(Long id, String name, String email) {
         this.id = id;
         this.name = name;
         this.email = email;
+        this.role = Role.STUDENT;
+    }
+
+    // Parameterized constructor for authenticated student registration
+    public User(String collegeUid, String name, String email, String passwordHash, Role role) {
+        this.collegeUid = collegeUid;
+        this.name = name;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role != null ? role : Role.STUDENT;
     }
 
     // Getters and Setters
@@ -54,6 +81,14 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getCollegeUid() {
+        return collegeUid;
+    }
+
+    public void setCollegeUid(String collegeUid) {
+        this.collegeUid = collegeUid;
     }
 
     public String getName() {
@@ -70,6 +105,30 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }
 
