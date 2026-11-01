@@ -1,0 +1,517 @@
+{
+	"info": {
+		"_postman_id": "c8a41df9-4df1-4a18-b2a6-campus-lost-found",
+		"name": "Campus Lost & Found Portal API",
+		"description": "End-to-End API test collection for Campus Lost & Found Portal (Spring Boot + MySQL + Spring Data JPA + Spring JDBC).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Test A — User Registration",
+			"item": [
+				{
+					"name": "1. Register First User (Alice - Reporter)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Alice Smith\",\n  \"email\": \"alice.smith@campus.edu\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/users",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "users"]
+						}
+					}
+				},
+				{
+					"name": "2. Register Second User (Bob - Claimant)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Bob Jones\",\n  \"email\": \"bob.jones@campus.edu\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/users",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "users"]
+						}
+					}
+				},
+				{
+					"name": "3. Get User By ID (Alice)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "users", "1"]
+						}
+					}
+				},
+				{
+					"name": "4. Get User By Email (Bob)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users?email=bob.jones@campus.edu",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "users"],
+							"query": [
+								{
+									"key": "email",
+									"value": "bob.jones@campus.edu"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "5. Duplicate Email Registration (Expect 409 Conflict)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Alice Duplicate\",\n  \"email\": \"alice.smith@campus.edu\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/users",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "users"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Test B — Item Reports",
+			"item": [
+				{
+					"name": "1. Create FOUND Item Report (Blue Backpack by Alice)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Blue Dell Laptop Bag\",\n  \"description\": \"Found near table 4 with a mouse inside\",\n  \"category\": \"Electronics\",\n  \"location\": \"Central Library 2nd Floor\",\n  \"reportType\": \"FOUND\",\n  \"reporterId\": 1\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/reports",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports"]
+						}
+					}
+				},
+				{
+					"name": "2. Create LOST Item Report (Water Bottle by Bob)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Silver Hydro Flask Water Bottle\",\n  \"description\": \"Stainless steel bottle with stickers\",\n  \"category\": \"Personal Belongings\",\n  \"location\": \"Student Cafeteria\",\n  \"reportType\": \"LOST\",\n  \"reporterId\": 2\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/reports",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports"]
+						}
+					}
+				},
+				{
+					"name": "3. Get All Reports",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/reports",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports"]
+						}
+					}
+				},
+				{
+					"name": "4. Get Report By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/reports/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports", "1"]
+						}
+					}
+				},
+				{
+					"name": "5. Filter Reports by Type and Status (FOUND & REPORTED)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/reports?type=FOUND&status=REPORTED",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports"],
+							"query": [
+								{
+									"key": "type",
+									"value": "FOUND"
+								},
+								{
+									"key": "status",
+									"value": "REPORTED"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6. Search Reports (Category & Location)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/reports/search?category=Electronics&location=Library",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports", "search"],
+							"query": [
+								{
+									"key": "category",
+									"value": "Electronics"
+								},
+								{
+									"key": "location",
+									"value": "Library"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "7. Get Reports by User ID (Alice)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/reports/user/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports", "user", "1"]
+						}
+					}
+				},
+				{
+					"name": "8. Update Report Details",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Blue Dell Laptop Bag (Updated)\",\n  \"description\": \"Found near table 4 with Logitech wireless mouse inside\",\n  \"category\": \"Electronics\",\n  \"location\": \"Central Library 2nd Floor Room 204\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/reports/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports", "1"]
+						}
+					}
+				},
+				{
+					"name": "9. Submit Invalid Report Data (Expect 400 Bad Request)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"\",\n  \"category\": \"\",\n  \"reporterId\": null\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/reports",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Test C — Claims Workflow",
+			"item": [
+				{
+					"name": "1. Submit Claim for Found Item (Bob claims Report 1)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemReportId\": 1,\n  \"claimantId\": 2,\n  \"description\": \"This is my bag. Inside the front zipper is a black Logitech pebble mouse with serial number M350.\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/claims",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "claims"]
+						}
+					}
+				},
+				{
+					"name": "2. Get Claim by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/claims/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "claims", "1"]
+						}
+					}
+				},
+				{
+					"name": "3. Get Claims by Report ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/claims?reportId=1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "claims"],
+							"query": [
+								{
+									"key": "reportId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "4. Attempt Duplicate Claim (Expect 409 Conflict)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemReportId\": 1,\n  \"claimantId\": 2,\n  \"description\": \"Duplicate claim attempt for the same item\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/claims",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "claims"]
+						}
+					}
+				},
+				{
+					"name": "5. Attempt Claiming Own Item (Expect 400 Bad Request)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemReportId\": 1,\n  \"claimantId\": 1,\n  \"description\": \"Alice trying to claim the item she found\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/claims",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "claims"]
+						}
+					}
+				},
+				{
+					"name": "6. Approve Valid Claim (Claim 1)",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/claims/1/approve",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "claims", "1", "approve"]
+						}
+					}
+				},
+				{
+					"name": "7. Attempt Re-Approving Non-Pending Claim (Expect 400 Bad Request)",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/claims/1/approve",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "claims", "1", "approve"]
+						}
+					}
+				},
+				{
+					"name": "8. Mark Claimed Item as Returned (Report 1)",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/reports/1/returned",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports", "1", "returned"]
+						}
+					}
+				},
+				{
+					"name": "9. Attempt Marking Already Returned Item (Expect 400 Bad Request)",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/reports/1/returned",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "reports", "1", "returned"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Test D — JDBC Analytics",
+			"item": [
+				{
+					"name": "1. Unclaimed Items By Location",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/analytics/unclaimed-items/by-location",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "analytics", "unclaimed-items", "by-location"]
+						}
+					}
+				},
+				{
+					"name": "2. Unclaimed Items By Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/analytics/unclaimed-items/by-category",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "analytics", "unclaimed-items", "by-category"]
+						}
+					}
+				},
+				{
+					"name": "3. Detailed Unclaimed Items List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/analytics/unclaimed-items/details",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "analytics", "unclaimed-items", "details"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
+
