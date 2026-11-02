@@ -45,5 +45,21 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
      * @return true if a claim already exists for this pair, false otherwise
      */
     boolean existsByItemReportIdAndClaimantId(Long itemReportId, Long claimantId);
+
+    /**
+     * Eagerly loads a claim with its associated item report, report reporter, and claimant user.
+     * Prevents LazyInitializationException when accessing nested associations outside transactions.
+     *
+     * @param id claim ID
+     * @return optional claim with eagerly fetched associations
+     */
+    @org.springframework.data.jpa.repository.Query(
+            "SELECT c FROM Claim c " +
+            "LEFT JOIN FETCH c.itemReport r " +
+            "LEFT JOIN FETCH r.reporter " +
+            "LEFT JOIN FETCH c.claimant " +
+            "WHERE c.id = :id"
+    )
+    java.util.Optional<Claim> findByIdWithDetails(@org.springframework.data.repository.query.Param("id") Long id);
 }
 

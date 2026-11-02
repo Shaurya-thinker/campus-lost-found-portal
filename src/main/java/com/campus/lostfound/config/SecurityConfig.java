@@ -30,8 +30,7 @@ import java.util.List;
  * 1. Stateless Session Management: Sessions are not stored on the server (SessionCreationPolicy.STATELESS).
  *    All request authentication is verified via signed JSON Web Tokens (JWT).
  * 2. CSRF Protection: Disabled intentionally because this application operates as a pure stateless REST
- *    API using 'Authorization: Bearer <token>' headers. Browsers never automatically attach Bearer headers
- *    on cross-origin requests (unlike ambient cookie credentials), making traditional CSRF attacks ineffective.
+ *    API using 'Authorization: Bearer <token>' headers.
  * 3. CORS: Explicitly allows the local Vite development origin (http://localhost:5173).
  * 4. Password Security: Uses BCrypt strong one-way hashing with salt.
  */
@@ -89,6 +88,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/reports/{id}/returned").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/claims/{id}/approve").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/claims/{id}/reject").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/claims/{id}/request-info").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/claims/{id}/verification").hasRole("ADMIN")
                         .requestMatchers("/api/analytics/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/users/**").hasRole("ADMIN")
 
@@ -115,4 +116,3 @@ public class SecurityConfig {
         return source;
     }
 }
-

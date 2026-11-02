@@ -6,7 +6,10 @@ import com.campus.lostfound.entity.enums.ClaimStatus;
 import java.time.LocalDate;
 
 /**
- * Response payload representing claim details without exposing entity internals.
+ * Response payload representing claim details without exposing entity
+ * internals.
+ * Contains claimant's own submitted details; strictly excludes reporter private
+ * details.
  */
 public class ClaimResponse {
 
@@ -16,6 +19,8 @@ public class ClaimResponse {
     private Long claimantId;
     private String claimantName;
     private String description;
+    private String identifyingFeatures;
+    private Long claimantEvidenceId;
     private LocalDate claimDate;
     private ClaimStatus claimStatus;
 
@@ -23,8 +28,8 @@ public class ClaimResponse {
     }
 
     public ClaimResponse(Long id, Long itemReportId, String itemTitle, Long claimantId,
-                         String claimantName, String description, LocalDate claimDate,
-                         ClaimStatus claimStatus) {
+            String claimantName, String description, LocalDate claimDate,
+            ClaimStatus claimStatus) {
         this.id = id;
         this.itemReportId = itemReportId;
         this.itemTitle = itemTitle;
@@ -35,7 +40,26 @@ public class ClaimResponse {
         this.claimStatus = claimStatus;
     }
 
+    public ClaimResponse(Long id, Long itemReportId, String itemTitle, Long claimantId,
+            String claimantName, String description, String identifyingFeatures,
+            Long claimantEvidenceId, LocalDate claimDate, ClaimStatus claimStatus) {
+        this.id = id;
+        this.itemReportId = itemReportId;
+        this.itemTitle = itemTitle;
+        this.claimantId = claimantId;
+        this.claimantName = claimantName;
+        this.description = description;
+        this.identifyingFeatures = identifyingFeatures;
+        this.claimantEvidenceId = claimantEvidenceId;
+        this.claimDate = claimDate;
+        this.claimStatus = claimStatus;
+    }
+
     public static ClaimResponse fromEntity(Claim claim) {
+        return fromEntity(claim, null);
+    }
+
+    public static ClaimResponse fromEntity(Claim claim, Long claimantEvidenceId) {
         if (claim == null) {
             return null;
         }
@@ -46,9 +70,10 @@ public class ClaimResponse {
                 claim.getClaimant() != null ? claim.getClaimant().getId() : null,
                 claim.getClaimant() != null ? claim.getClaimant().getName() : null,
                 claim.getDescription(),
+                claim.getIdentifyingFeatures(),
+                claimantEvidenceId,
                 claim.getClaimDate(),
-                claim.getClaimStatus()
-        );
+                claim.getClaimStatus());
     }
 
     public Long getId() {
@@ -99,6 +124,22 @@ public class ClaimResponse {
         this.description = description;
     }
 
+    public String getIdentifyingFeatures() {
+        return identifyingFeatures;
+    }
+
+    public void setIdentifyingFeatures(String identifyingFeatures) {
+        this.identifyingFeatures = identifyingFeatures;
+    }
+
+    public Long getClaimantEvidenceId() {
+        return claimantEvidenceId;
+    }
+
+    public void setClaimantEvidenceId(Long claimantEvidenceId) {
+        this.claimantEvidenceId = claimantEvidenceId;
+    }
+
     public LocalDate getClaimDate() {
         return claimDate;
     }
@@ -115,4 +156,3 @@ public class ClaimResponse {
         this.claimStatus = claimStatus;
     }
 }
-

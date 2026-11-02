@@ -42,13 +42,19 @@ public class Claim {
     @Column(name = "description", nullable = false, length = 1000)
     private String description;
 
+    /**
+     * Specific identifying features or evidence proving ownership (e.g. markings, serials, contents).
+     */
+    @Column(name = "identifying_features", length = 1000)
+    private String identifyingFeatures;
+
     @NotNull(message = "Claim date is required")
     @Column(name = "claim_date", nullable = false)
     private LocalDate claimDate;
 
     @NotNull(message = "Claim status is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "claim_status", nullable = false, length = 20)
+    @Column(name = "claim_status", nullable = false, length = 30)
     private ClaimStatus claimStatus;
 
     // Default no-argument constructor required by JPA
@@ -65,6 +71,17 @@ public class Claim {
         this.claimStatus = claimStatus;
     }
 
+    // Constructor with identifyingFeatures
+    public Claim(ItemReport itemReport, User claimant, String description, String identifyingFeatures,
+                 LocalDate claimDate, ClaimStatus claimStatus) {
+        this.itemReport = itemReport;
+        this.claimant = claimant;
+        this.description = description;
+        this.identifyingFeatures = identifyingFeatures;
+        this.claimDate = claimDate;
+        this.claimStatus = claimStatus;
+    }
+
     // Full constructor
     public Claim(Long id, ItemReport itemReport, User claimant, String description,
                  LocalDate claimDate, ClaimStatus claimStatus) {
@@ -72,6 +89,18 @@ public class Claim {
         this.itemReport = itemReport;
         this.claimant = claimant;
         this.description = description;
+        this.claimDate = claimDate;
+        this.claimStatus = claimStatus;
+    }
+
+    // Full constructor with identifyingFeatures
+    public Claim(Long id, ItemReport itemReport, User claimant, String description, String identifyingFeatures,
+                 LocalDate claimDate, ClaimStatus claimStatus) {
+        this.id = id;
+        this.itemReport = itemReport;
+        this.claimant = claimant;
+        this.description = description;
+        this.identifyingFeatures = identifyingFeatures;
         this.claimDate = claimDate;
         this.claimStatus = claimStatus;
     }
@@ -110,6 +139,14 @@ public class Claim {
         this.description = description;
     }
 
+    public String getIdentifyingFeatures() {
+        return identifyingFeatures;
+    }
+
+    public void setIdentifyingFeatures(String identifyingFeatures) {
+        this.identifyingFeatures = identifyingFeatures;
+    }
+
     public LocalDate getClaimDate() {
         return claimDate;
     }
@@ -126,4 +163,3 @@ public class Claim {
         this.claimStatus = claimStatus;
     }
 }
-

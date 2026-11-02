@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type FormEvent } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { ItemReport, ReportType } from '../../types/report'
 import { fetchReports } from '../../services/reportsApi'
 import { HeroSection } from './HeroSection'
@@ -64,14 +64,6 @@ export function HomePage({ onOpenReportForm, onViewDetails, refreshTrigger = 0 }
     }
   }, [selectedType, refreshTrigger])
 
-  const handleSearchSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    const browseElement = document.getElementById('browse')
-    if (browseElement) {
-      browseElement.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
-
   const handleClearSearch = () => {
     setSearchQuery('')
   }
@@ -79,9 +71,6 @@ export function HomePage({ onOpenReportForm, onViewDetails, refreshTrigger = 0 }
   return (
     <main id="main-content">
       <HeroSection
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onSearchSubmit={handleSearchSubmit}
         onOpenReportForm={onOpenReportForm}
       />
 

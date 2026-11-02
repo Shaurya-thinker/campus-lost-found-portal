@@ -1,7 +1,8 @@
-import { useState, useEffect, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent, type ChangeEvent } from 'react'
 import type { ReportType, ItemReport } from '../../types/report'
 import type { AuthUser } from '../../types/auth'
 import { createReport, ApiError } from '../../services/reportsApi'
+import { uploadReportEvidence } from '../../services/evidenceApi'
 import { Container, Card, Button, Input, Badge } from '../ui'
 import './ReportForm.css'
 
@@ -20,6 +21,9 @@ interface FormFields {
   category: string
   location: string
   description: string
+  privateDescription: string
+  photoFile: File | null
+  photoPreview: string | null
 }
 
 interface FormErrors {
@@ -28,6 +32,8 @@ interface FormErrors {
   category?: string
   location?: string
   description?: string
+  privateDescription?: string
+  photo?: string
 }
 
 export function ReportForm({
@@ -44,6 +50,9 @@ export function ReportForm({
     category: '',
     location: '',
     description: '',
+    privateDescription: '',
+    photoFile: null,
+    photoPreview: null,
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -56,14 +65,65 @@ export function ReportForm({
     setFields((prev) => ({ ...prev, reportType: initialType }))
   }, [initialType])
 
+  // Clean up object URL when component unmounts or preview changes
+  useEffect(() => {
+    return () => {
+      if (fields.photoPreview) {
+        URL.revokeObjectURL(fields.photoPreview)
+      }
+    }
+  }, [fields.photoPreview])
+
   const handleFieldChange = (field: keyof FormFields, value: string) => {
     setFields((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) {
+    if (errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
     if (serverError) {
       setServerError(null)
     }
+  }
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate size (5 MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, photo: 'File size must not exceed 5 MB' }))
+      return
+    }
+
+    // Validate type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type.toLowerCase())) {
+      setErrors((prev) => ({ ...prev, photo: 'Only JPEG, PNG, and WebP images are permitted' }))
+      return
+    }
+
+    // Revoke previous preview if existed
+    if (fields.photoPreview) {
+      URL.revokeObjectURL(fields.photoPreview)
+    }
+
+    const previewUrl = URL.createObjectURL(file)
+    setFields((prev) => ({
+      ...prev,
+      photoFile: file,
+      photoPreview: previewUrl,
+    }))
+    setErrors((prev) => ({ ...prev, photo: undefined }))
+  }
+
+  const handleRemovePhoto = () => {
+    if (fields.photoPreview) {
+      URL.revokeObjectURL(fields.photoPreview)
+    }
+    setFields((prev) => ({
+      ...prev,
+      photoFile: null,
+      photoPreview: null,
+    }))
   }
 
   const validate = (): boolean => {
@@ -97,6 +157,17 @@ export function ReportForm({
       newErrors.description = 'Description must not exceed 1000 characters'
     }
 
+    // Milestone 13: FOUND reports strictly require private distinguishing details
+    if (fields.reportType === 'FOUND') {
+      const privateTrimmed = fields.privateDescription.trim()
+      if (!privateTrimmed) {
+        newErrors.privateDescription =
+          'Private distinguishing details are required for FOUND items to enable secure administrator ownership verification.'
+      } else if (privateTrimmed.length > 1000) {
+        newErrors.privateDescription = 'Private description must not exceed 1000 characters'
+      }
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -117,15 +188,27 @@ export function ReportForm({
     setIsSubmitting(true)
 
     try {
+      // 1. Create the report
       const created = await createReport({
         title: fields.title.trim(),
         category: fields.category.trim(),
         location: fields.location.trim(),
         description: fields.description.trim(),
+        privateDescription: fields.reportType === 'FOUND' ? fields.privateDescription.trim() : undefined,
         reportType: fields.reportType,
       })
 
-      // Backend confirmed creation with HTTP 201 Created and persisted entity
+      // 2. If a private photo was selected for a FOUND report, upload it to the secure evidence endpoint
+      if (fields.reportType === 'FOUND' && fields.photoFile) {
+        try {
+          await uploadReportEvidence(created.id, fields.photoFile)
+        } catch (uploadErr) {
+          console.error('Evidence upload warning:', uploadErr)
+          // Report was created, alert user if evidence upload had a secondary issue
+          setServerError('Report was logged, but private photo upload failed: ' + (uploadErr instanceof Error ? uploadErr.message : 'Unknown error'))
+        }
+      }
+
       setSubmittedReport(created)
       onSuccess(created)
     } catch (err) {
@@ -143,83 +226,78 @@ export function ReportForm({
   }
 
   const handleReset = () => {
+    if (fields.photoPreview) {
+      URL.revokeObjectURL(fields.photoPreview)
+    }
     setFields({
       reportType: initialType,
       title: '',
       category: '',
       location: '',
       description: '',
+      privateDescription: '',
+      photoFile: null,
+      photoPreview: null,
     })
     setErrors({})
     setServerError(null)
     setSubmittedReport(null)
   }
 
-  // If no user is authenticated, show prompt with sign-in and registration links
+  // When no authenticated user is in session
   if (!currentUser) {
     return (
       <div className="report-form-page">
         <Container size="md">
-          <div className="report-form-header">
-            <button
-              type="button"
-              className="report-back-btn"
-              onClick={onCancel}
-              aria-label="Return to catalog"
-            >
-              &larr; Back to catalog
-            </button>
-            <h1 className="report-form-title">Authentication Required</h1>
-            <p className="report-form-desc">
-              To file a lost or found property report, please authenticate using your campus credentials.
-              This ensures reports are verified and accountable to enrolled campus members.
+          <Card className="report-gate-card">
+            <h2 className="report-gate-title">Authentication Required</h2>
+            <p className="report-gate-desc">
+              To ensure campus property accountability, all lost and found reports must be filed under a verified student account.
             </p>
-          </div>
-
-          <Card className="report-form-card" style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
-            <h2 style={{ fontFamily: 'var(--font-family-display)', fontSize: 'var(--font-size-2xl)', color: 'var(--color-navy)', marginBottom: 'var(--space-2)' }}>
-              Sign In to Submit Reports
-            </h2>
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', maxWidth: '480px', margin: '0 auto var(--space-6)', lineHeight: 'var(--line-height-normal)' }}>
-              Sign in with your College UID and password to report items. Your identity and student role will be automatically verified by the server.
-            </p>
-            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div className="report-gate-actions">
               {onNavigateLogin && (
                 <Button variant="primary" onClick={onNavigateLogin}>
-                  Sign In
+                  Sign in
                 </Button>
               )}
               {onNavigateRegister && (
                 <Button variant="outline" onClick={onNavigateRegister}>
-                  Register as a student
+                  Register account
                 </Button>
               )}
-              <Button variant="ghost" onClick={onCancel}>
-                Return to catalog
-              </Button>
             </div>
+            <button
+              type="button"
+              className="report-gate-cancel"
+              onClick={onCancel}
+            >
+              &larr; Return to browse catalog
+            </button>
           </Card>
         </Container>
       </div>
     )
   }
 
-  // 3. Success state: display confirmation with actual backend response values
+  // Confirmation view after report is successfully submitted
   if (submittedReport) {
     return (
       <div className="report-form-page">
-        <Container size="lg">
+        <Container size="md">
           <Card className="report-success-card">
-            <Badge variant="success">Report Logged Successfully</Badge>
-            <h2 className="report-success-title">Item Registered in Campus Catalog</h2>
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-              Your {submittedReport.reportType.toLowerCase()} item report has been cataloged and is now visible to campus staff and students.
+            <div className="report-success-icon" aria-hidden="true">&#10003;</div>
+            <h2 className="report-success-title">Report Filed Successfully</h2>
+            <p className="report-success-desc">
+              Your {submittedReport.reportType.toLowerCase()} item report has been logged in the university property system.
+              {submittedReport.reportType === 'FOUND' && (
+                <span> Private distinguishing evidence was securely recorded for administrative ownership verification.</span>
+              )}
             </p>
 
             <div className="report-success-details">
               <div className="report-success-row">
-                <span style={{ color: 'var(--color-text-muted)' }}>Report Reference ID:</span>
-                <strong>#{submittedReport.id}</strong>
+                <span style={{ color: 'var(--color-text-muted)' }}>Report Reference:</span>
+                <span style={{ fontWeight: 'var(--font-weight-semibold)' }}>#{submittedReport.id}</span>
               </div>
               <div className="report-success-row">
                 <span style={{ color: 'var(--color-text-muted)' }}>Item Title:</span>
@@ -386,8 +464,8 @@ export function ReportForm({
               <textarea
                 id="report-description"
                 className={`ui-textarea-field ${errors.description ? 'ui-textarea-field--error' : ''}`}
-                placeholder="Include color, brand, stickers, unique scratches, or contents inside..."
-                rows={4}
+                placeholder="General description visible to all students (e.g. Black backpack found in hallway)..."
+                rows={3}
                 value={fields.description}
                 onChange={(e) => handleFieldChange('description', e.target.value)}
                 disabled={isSubmitting}
@@ -398,7 +476,7 @@ export function ReportForm({
               />
               {!errors.description ? (
                 <p id="report-description-hint" className="ui-input-hint">
-                  Provide distinguishing features to verify ownership before return (max 1000 characters).
+                  Provide general description for public browsing (max 1000 characters). Do not reveal unique identifying secrets here.
                 </p>
               ) : (
                 <p id="report-description-error" className="ui-input-error" role="alert">
@@ -406,6 +484,86 @@ export function ReportForm({
                 </p>
               )}
             </div>
+
+            {/* 6. Milestone 13: FOUND Items Confidential Private Details Section */}
+            {fields.reportType === 'FOUND' && (
+              <div className="report-private-evidence-section">
+                <div className="report-private-notice">
+                  <span className="report-private-badge">🔒 Confidential Admin Evidence</span>
+                  <h3 className="report-private-title">Private Identifying Information</h3>
+                  <p className="report-private-desc">
+                    These private distinguishing details and optional photograph are <strong>strictly hidden from the public catalog and student claimants</strong>. They are accessible only to university property desk administrators to verify ownership claims before approving an item return.
+                  </p>
+                </div>
+
+                {/* Required Private Description */}
+                <div className="ui-input-group">
+                  <label htmlFor="report-private-description" className="ui-input-label ui-input-label--required">
+                    Private Distinguishing Description *
+                  </label>
+                  <textarea
+                    id="report-private-description"
+                    className={`ui-textarea-field ${errors.privateDescription ? 'ui-textarea-field--error' : ''}`}
+                    placeholder="Specify unique identifying details that only the true owner would know (e.g. serial numbers, wallpaper picture, inner pocket contents, engravings, scratches)..."
+                    rows={4}
+                    value={fields.privateDescription}
+                    onChange={(e) => handleFieldChange('privateDescription', e.target.value)}
+                    disabled={isSubmitting}
+                    maxLength={1000}
+                    aria-invalid={Boolean(errors.privateDescription)}
+                    aria-describedby={errors.privateDescription ? 'report-private-desc-error' : 'report-private-desc-hint'}
+                    required
+                  />
+                  {!errors.privateDescription ? (
+                    <p id="report-private-desc-hint" className="ui-input-hint">
+                      Required for FOUND items. Kept private to protect item ownership verification.
+                    </p>
+                  ) : (
+                    <p id="report-private-desc-error" className="ui-input-error" role="alert">
+                      {errors.privateDescription}
+                    </p>
+                  )}
+                </div>
+
+                {/* Optional Private Photo */}
+                <div className="evidence-file-input-wrapper">
+                  <label htmlFor="report-photo" className="ui-input-label">
+                    Private Photograph of Found Item (Optional)
+                  </label>
+                  <input
+                    id="report-photo"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    className="evidence-file-input"
+                    onChange={handleFileChange}
+                    disabled={isSubmitting}
+                  />
+                  <p className="ui-input-hint" style={{ fontSize: 'var(--font-size-xs)' }}>
+                    Supported formats: JPEG, PNG, WebP (Max 5 MB). Stored securely outside public directories.
+                  </p>
+                  {errors.photo && (
+                    <p className="ui-input-error" role="alert">
+                      {errors.photo}
+                    </p>
+                  )}
+
+                  {fields.photoPreview && (
+                    <div className="evidence-preview-box">
+                      <img src={fields.photoPreview} alt="Preview of private photo" className="evidence-preview-img" />
+                      <button
+                        type="button"
+                        className="evidence-remove-btn"
+                        onClick={handleRemovePhoto}
+                        title="Remove photo"
+                        aria-label="Remove photo"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Form Actions */}
             <div className="report-form-actions">

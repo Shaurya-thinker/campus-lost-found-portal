@@ -3,11 +3,14 @@ package com.campus.lostfound.controller;
 import com.campus.lostfound.dto.ItemReportCreateRequest;
 import com.campus.lostfound.dto.ItemReportResponse;
 import com.campus.lostfound.dto.ItemReportUpdateRequest;
+import com.campus.lostfound.dto.ReportPrivateDetailsResponse;
+import com.campus.lostfound.entity.EvidenceFile;
 import com.campus.lostfound.entity.ItemReport;
 import com.campus.lostfound.entity.enums.ItemStatus;
 import com.campus.lostfound.entity.enums.ReportType;
 import com.campus.lostfound.entity.enums.Role;
 import com.campus.lostfound.security.UserPrincipal;
+import com.campus.lostfound.service.EvidenceService;
 import com.campus.lostfound.service.ItemReportService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * REST controller managing lost and found item reports.
@@ -36,9 +41,11 @@ import java.util.List;
 public class ItemReportController {
 
     private final ItemReportService itemReportService;
+    private final EvidenceService evidenceService;
 
-    public ItemReportController(ItemReportService itemReportService) {
+    public ItemReportController(ItemReportService itemReportService, EvidenceService evidenceService) {
         this.itemReportService = itemReportService;
+        this.evidenceService = evidenceService;
     }
 
     /**
@@ -61,7 +68,7 @@ public class ItemReportController {
 
     /**
      * Retrieves all reports, optionally filtered by report type (LOST/FOUND) and/or status (REPORTED/CLAIMED/RETURNED).
-     * Public endpoint for catalog browsing.
+     * Public endpoint for catalog browsing. Does NOT leak private descriptions or private evidence.
      * GET /api/reports
      * GET /api/reports?type=FOUND&status=REPORTED
      */
@@ -78,7 +85,7 @@ public class ItemReportController {
 
     /**
      * Retrieves an individual item report by its ID.
-     * Public endpoint for item details inspection.
+     * Public endpoint for item details inspection. Does NOT leak private descriptions or private evidence.
      * GET /api/reports/{id}
      */
     @GetMapping("/{id}")
@@ -88,8 +95,39 @@ public class ItemReportController {
     }
 
     /**
+     * Retrieves confidential private details of a report (private description and evidence ID).
+     * Restricted strictly to the reporting student or an administrator.
+     * GET /api/reports/{id}/private-details
+     */
+    @GetMapping("/{id}/private-details")
+    public ResponseEntity<ReportPrivateDetailsResponse> getReportPrivateDetails(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null || principal.getId() == null) {
+            throw new AccessDeniedException("Authentication required to view private report details.");
+        }
+
+        ItemReport report = itemReportService.getReportById(id);
+        if (principal.getRole() != Role.ADMIN && !Objects.equals(report.getReporter().getId(), principal.getId())) {
+            throw new AccessDeniedException("You are not authorized to view confidential details for this report.");
+        }
+
+        Optional<EvidenceFile> evidenceOpt = evidenceService.getReportEvidence(id);
+        ReportPrivateDetailsResponse response = new ReportPrivateDetailsResponse(
+                report.getId(),
+                report.getPrivateDescription(),
+                evidenceOpt.map(EvidenceFile::getId).orElse(null),
+                evidenceOpt.map(EvidenceFile::getOriginalFilename).orElse(null),
+                evidenceOpt.map(EvidenceFile::getFileSize).orElse(null),
+                evidenceOpt.map(EvidenceFile::getContentType).orElse(null)
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Searches reports using category and/or location keyword parameters.
-     * Public endpoint for catalog discovery.
+     * Public endpoint for catalog discovery. Does NOT leak private details.
      * GET /api/reports/search?category=Electronics&location=Library
      */
     @GetMapping("/search")
@@ -155,4 +193,3 @@ public class ItemReportController {
         return ResponseEntity.ok(ItemReportResponse.fromEntity(returned));
     }
 }
-

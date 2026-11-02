@@ -37,6 +37,13 @@ public class ItemReport {
     @Column(name = "description", nullable = false, length = 1000)
     private String description;
 
+    /**
+     * Private distinguishing details collected exclusively for FOUND reports.
+     * Never returned in public catalog or search responses.
+     */
+    @Column(name = "private_description", length = 1000)
+    private String privateDescription;
+
     @NotBlank(message = "Category is required")
     @Column(name = "category", nullable = false, length = 50)
     private String category;
@@ -81,12 +88,41 @@ public class ItemReport {
         this.reporter = reporter;
     }
 
+    // Constructor with privateDescription
+    public ItemReport(String title, String description, String privateDescription, String category,
+                      String location, ReportType reportType, LocalDate reportDate, ItemStatus status, User reporter) {
+        this.title = title;
+        this.description = description;
+        this.privateDescription = privateDescription;
+        this.category = category;
+        this.location = location;
+        this.reportType = reportType;
+        this.reportDate = reportDate;
+        this.status = status;
+        this.reporter = reporter;
+    }
+
     // Full constructor
     public ItemReport(Long id, String title, String description, String category, String location,
                       ReportType reportType, LocalDate reportDate, ItemStatus status, User reporter) {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.category = category;
+        this.location = location;
+        this.reportType = reportType;
+        this.reportDate = reportDate;
+        this.status = status;
+        this.reporter = reporter;
+    }
+
+    // Full constructor with privateDescription
+    public ItemReport(Long id, String title, String description, String privateDescription, String category,
+                      String location, ReportType reportType, LocalDate reportDate, ItemStatus status, User reporter) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.privateDescription = privateDescription;
         this.category = category;
         this.location = location;
         this.reportType = reportType;
@@ -119,6 +155,14 @@ public class ItemReport {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getPrivateDescription() {
+        return privateDescription;
+    }
+
+    public void setPrivateDescription(String privateDescription) {
+        this.privateDescription = privateDescription;
     }
 
     public String getCategory() {
@@ -169,4 +213,3 @@ public class ItemReport {
         this.reporter = reporter;
     }
 }
-

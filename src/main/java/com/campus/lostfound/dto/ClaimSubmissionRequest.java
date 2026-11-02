@@ -19,6 +19,9 @@ public class ClaimSubmissionRequest {
     @Size(max = 1000, message = "Description must not exceed 1000 characters")
     private String description;
 
+    @Size(max = 1000, message = "Identifying features must not exceed 1000 characters")
+    private String identifyingFeatures;
+
     public ClaimSubmissionRequest() {
     }
 
@@ -27,10 +30,23 @@ public class ClaimSubmissionRequest {
         this.description = description;
     }
 
+    public ClaimSubmissionRequest(Long itemReportId, String description, String identifyingFeatures) {
+        this.itemReportId = itemReportId;
+        this.description = description;
+        this.identifyingFeatures = identifyingFeatures;
+    }
+
     public ClaimSubmissionRequest(Long itemReportId, Long claimantId, String description) {
         this.itemReportId = itemReportId;
         this.claimantId = claimantId;
         this.description = description;
+    }
+
+    public ClaimSubmissionRequest(Long itemReportId, Long claimantId, String description, String identifyingFeatures) {
+        this.itemReportId = itemReportId;
+        this.claimantId = claimantId;
+        this.description = description;
+        this.identifyingFeatures = identifyingFeatures;
     }
 
     public Long getItemReportId() {
@@ -56,5 +72,12 @@ public class ClaimSubmissionRequest {
     public void setDescription(String description) {
         this.description = description;
     }
-}
 
+    public String getIdentifyingFeatures() {
+        return identifyingFeatures;
+    }
+
+    public void setIdentifyingFeatures(String identifyingFeatures) {
+        this.identifyingFeatures = identifyingFeatures;
+    }
+}

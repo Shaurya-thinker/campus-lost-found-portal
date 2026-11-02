@@ -57,23 +57,24 @@ class ClaimServiceTest {
         foundReport = new ItemReport(10L, "Dell Laptop Bag", "Blue bag", "Electronics",
                 "Library", ReportType.FOUND, LocalDate.now(), ItemStatus.REPORTED, reporter);
         pendingClaim = new Claim(100L, foundReport, claimant, "Contains my mouse",
-                LocalDate.now(), ClaimStatus.PENDING);
+                "Logitech MX Master mouse with scratch on wheel", LocalDate.now(), ClaimStatus.PENDING);
     }
 
     @Test
-    @DisplayName("Should successfully submit a claim in PENDING status")
+    @DisplayName("Should successfully submit a claim in PENDING status with identifying features")
     void testSubmitClaim_Success() {
         when(userRepository.findById(2L)).thenReturn(Optional.of(claimant));
         when(itemReportRepository.findById(10L)).thenReturn(Optional.of(foundReport));
         when(claimRepository.existsByItemReportIdAndClaimantId(10L, 2L)).thenReturn(false);
         when(claimRepository.save(any(Claim.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Claim submitted = claimService.submitClaim(10L, 2L, "Contains my mouse");
+        Claim submitted = claimService.submitClaim(10L, 2L, "Contains my mouse", "Logitech MX Master mouse");
 
         assertNotNull(submitted);
         assertEquals(ClaimStatus.PENDING, submitted.getClaimStatus());
         assertEquals(foundReport, submitted.getItemReport());
         assertEquals(claimant, submitted.getClaimant());
+        assertEquals("Logitech MX Master mouse", submitted.getIdentifyingFeatures());
     }
 
     @Test
@@ -138,6 +139,20 @@ class ClaimServiceTest {
     }
 
     @Test
+    @DisplayName("Should approve claim when in MORE_INFO_REQUESTED status")
+    void testApproveClaim_FromMoreInfoRequested() {
+        pendingClaim.setClaimStatus(ClaimStatus.MORE_INFO_REQUESTED);
+        when(claimRepository.findById(100L)).thenReturn(Optional.of(pendingClaim));
+        when(claimRepository.save(any(Claim.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Claim approved = claimService.approveClaim(100L);
+
+        assertEquals(ClaimStatus.APPROVED, approved.getClaimStatus());
+        assertEquals(ItemStatus.CLAIMED, foundReport.getStatus());
+        verify(itemReportRepository).save(foundReport);
+    }
+
+    @Test
     @DisplayName("Should reject approving claim if item is already CLAIMED")
     void testApproveClaim_ItemAlreadyClaimed() {
         foundReport.setStatus(ItemStatus.CLAIMED);
@@ -157,5 +172,16 @@ class ClaimServiceTest {
         assertEquals(ClaimStatus.REJECTED, rejected.getClaimStatus());
         verify(claimRepository).save(pendingClaim);
     }
-}
 
+    @Test
+    @DisplayName("Should successfully transition claim to MORE_INFO_REQUESTED status")
+    void testRequestMoreInfo_Success() {
+        when(claimRepository.findById(100L)).thenReturn(Optional.of(pendingClaim));
+        when(claimRepository.save(any(Claim.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Claim updated = claimService.requestMoreInfo(100L);
+
+        assertEquals(ClaimStatus.MORE_INFO_REQUESTED, updated.getClaimStatus());
+        verify(claimRepository).save(pendingClaim);
+    }
+}

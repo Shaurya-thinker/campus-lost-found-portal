@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,11 +50,12 @@ class ItemReportServiceTest {
     }
 
     @Test
-    @DisplayName("Should successfully create a report and set default REPORTED status")
+    @DisplayName("Should successfully create a FOUND report with private description and default REPORTED status")
     void testCreateReport_Success() {
         ItemReport input = new ItemReport();
         input.setTitle("Laptop Bag");
         input.setDescription("Blue bag");
+        input.setPrivateDescription("Engraved initials AS on buckle and silver keychain inside");
         input.setCategory("Electronics");
         input.setLocation("Library");
         input.setReportType(ReportType.FOUND);
@@ -66,7 +68,45 @@ class ItemReportServiceTest {
         assertNotNull(created);
         assertEquals(ItemStatus.REPORTED, created.getStatus());
         assertEquals(reporter, created.getReporter());
+        assertEquals("Engraved initials AS on buckle and silver keychain inside", created.getPrivateDescription());
         assertNotNull(created.getReportDate());
+    }
+
+    @Test
+    @DisplayName("Should throw BusinessRuleException when FOUND report lacks private distinguishing details")
+    void testCreateReport_FoundReportMissingPrivateDescription() {
+        ItemReport input = new ItemReport();
+        input.setTitle("Laptop Bag");
+        input.setDescription("Blue bag");
+        input.setPrivateDescription(""); // empty private description
+        input.setCategory("Electronics");
+        input.setLocation("Library");
+        input.setReportType(ReportType.FOUND);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(reporter));
+
+        assertThrows(BusinessRuleException.class, () -> itemReportService.createReport(input, 1L));
+        verify(itemReportRepository, never()).save(any(ItemReport.class));
+    }
+
+    @Test
+    @DisplayName("Should successfully create LOST report without requiring private description")
+    void testCreateReport_LostReportSucceedsWithoutPrivateDescription() {
+        ItemReport input = new ItemReport();
+        input.setTitle("Water Bottle");
+        input.setDescription("Hydro Flask");
+        input.setCategory("Personal Items");
+        input.setLocation("Gym");
+        input.setReportType(ReportType.LOST);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(reporter));
+        when(itemReportRepository.save(any(ItemReport.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ItemReport created = itemReportService.createReport(input, 1L);
+
+        assertNotNull(created);
+        assertEquals(ItemStatus.REPORTED, created.getStatus());
+        verify(itemReportRepository).save(any(ItemReport.class));
     }
 
     @Test
@@ -100,4 +140,3 @@ class ItemReportServiceTest {
         assertThrows(BusinessRuleException.class, () -> itemReportService.markAsReturned(1L));
     }
 }
-

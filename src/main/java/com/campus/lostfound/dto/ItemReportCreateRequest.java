@@ -19,6 +19,13 @@ public class ItemReportCreateRequest {
     @Size(max = 1000, message = "Description must not exceed 1000 characters")
     private String description;
 
+    /**
+     * Required for FOUND reports to assist in admin claim verification.
+     * Optional / unused for LOST reports.
+     */
+    @Size(max = 1000, message = "Private description must not exceed 1000 characters")
+    private String privateDescription;
+
     @NotBlank(message = "Category is required")
     @Size(max = 50, message = "Category must not exceed 50 characters")
     private String category;
@@ -45,6 +52,16 @@ public class ItemReportCreateRequest {
         this.reportType = reportType;
     }
 
+    public ItemReportCreateRequest(String title, String description, String privateDescription,
+                                   String category, String location, ReportType reportType) {
+        this.title = title;
+        this.description = description;
+        this.privateDescription = privateDescription;
+        this.category = category;
+        this.location = location;
+        this.reportType = reportType;
+    }
+
     public ItemReportCreateRequest(String title, String description, String category,
                                    String location, ReportType reportType, Long reporterId) {
         this.title = title;
@@ -59,6 +76,7 @@ public class ItemReportCreateRequest {
         ItemReport report = new ItemReport();
         report.setTitle(this.title);
         report.setDescription(this.description);
+        report.setPrivateDescription(this.privateDescription);
         report.setCategory(this.category);
         report.setLocation(this.location);
         report.setReportType(this.reportType);
@@ -79,6 +97,14 @@ public class ItemReportCreateRequest {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getPrivateDescription() {
+        return privateDescription;
+    }
+
+    public void setPrivateDescription(String privateDescription) {
+        this.privateDescription = privateDescription;
     }
 
     public String getCategory() {
@@ -113,4 +139,3 @@ public class ItemReportCreateRequest {
         this.reporterId = reporterId;
     }
 }
-

@@ -99,7 +99,8 @@ export function SiteHeader({
                     onNavigateAdmin()
                   }}
                 >
-                  Admin Portal
+                  <span className="site-admin-nav-icon" aria-hidden="true">🛡️</span>
+                  <span>Admin Portal</span>
                 </a>
               )}
 

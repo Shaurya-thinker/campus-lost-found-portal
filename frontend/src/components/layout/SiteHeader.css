@@ -49,31 +49,47 @@
   flex-wrap: nowrap;
 }
 
+.site-header-actions .ui-button {
+  height: 34px;
+  min-height: 34px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: 0 var(--space-3);
+  line-height: 1;
+}
+
 .site-nav {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   flex-wrap: nowrap;
 }
 
 .site-nav-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  height: 34px;
+  box-sizing: border-box;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   text-decoration: none;
-  padding: var(--space-1) var(--space-2);
+  padding: 0 var(--space-2);
   border-radius: var(--radius-sm);
-  transition: color var(--transition-fast);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
   white-space: nowrap;
-  line-height: var(--line-height-normal);
+  line-height: 1;
 }
 
 .site-nav-link:hover {
   color: var(--color-navy);
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  text-decoration: none;
+  background-color: var(--color-surface-subdued);
 }
 
 .site-nav-link--highlight {
@@ -87,15 +103,26 @@
   background-color: var(--color-surface-subdued);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-sm);
-  padding: 4px 10px;
+  padding: 0 10px;
+  height: 34px;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .site-nav-link--admin:hover {
   background-color: var(--color-border-default);
   text-decoration: none;
+}
+
+.site-admin-nav-icon {
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* Session Indicator Box */
@@ -106,47 +133,61 @@
   background-color: var(--color-surface-bg);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
-  padding: 4px var(--space-2);
+  padding: 0 var(--space-2);
+  height: 34px;
+  box-sizing: border-box;
   white-space: nowrap;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .site-session-badge {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 6px;
   font-size: var(--font-size-xs);
   color: var(--color-navy);
   font-weight: var(--font-weight-medium);
   white-space: nowrap;
+  line-height: 1;
 }
 
 .site-session-icon {
   font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
 .site-session-name {
-  max-width: 160px;
+  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .site-session-id {
   background-color: var(--color-surface-subdued);
-  padding: 1px 5px;
+  padding: 2px 6px;
   border-radius: var(--radius-xs);
   font-size: 11px;
   color: var(--color-text-secondary);
   font-family: var(--font-family-mono);
   white-space: nowrap;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
 .site-admin-role-badge {
   font-size: 10px !important;
-  padding: 1px 5px !important;
+  padding: 2px 6px !important;
   text-transform: uppercase;
   white-space: nowrap;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
 }
 
 .site-signout-btn {
@@ -159,6 +200,9 @@
   padding-left: var(--space-2);
   cursor: pointer;
   line-height: 1;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
   transition: color var(--transition-fast);
   white-space: nowrap;
 }
@@ -169,7 +213,7 @@
 }
 
 /* Mobile responsive adjustments */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .site-header-inner {
     flex-wrap: wrap;
     gap: var(--space-2);
@@ -195,11 +239,18 @@
 
   .site-nav-link {
     font-size: var(--font-size-xs);
-    padding: var(--space-1);
+    height: 30px;
+    padding: 0 var(--space-1);
+  }
+
+  .site-nav-link--admin {
+    height: 30px;
+    padding: 0 8px;
   }
 
   .site-session-box {
     width: 100%;
     justify-content: space-between;
+    height: 32px;
   }
 }

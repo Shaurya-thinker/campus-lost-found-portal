@@ -2,12 +2,16 @@ package com.campus.lostfound.controller;
 
 import com.campus.lostfound.dto.ClaimResponse;
 import com.campus.lostfound.dto.ClaimSubmissionRequest;
+import com.campus.lostfound.dto.ClaimVerificationDetailsResponse;
 import com.campus.lostfound.entity.Claim;
+import com.campus.lostfound.entity.EvidenceFile;
+import com.campus.lostfound.entity.ItemReport;
 import com.campus.lostfound.entity.enums.ClaimStatus;
 import com.campus.lostfound.entity.enums.Role;
 import com.campus.lostfound.exception.BusinessRuleException;
 import com.campus.lostfound.security.UserPrincipal;
 import com.campus.lostfound.service.ClaimService;
+import com.campus.lostfound.service.EvidenceService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +28,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * REST controller managing claim submissions, evaluations, and status tracking.
+ * REST controller managing claim submissions, evaluations, verification, and status tracking.
  * Base path: /api/claims
  */
 @RestController
@@ -34,9 +39,11 @@ import java.util.List;
 public class ClaimController {
 
     private final ClaimService claimService;
+    private final EvidenceService evidenceService;
 
-    public ClaimController(ClaimService claimService) {
+    public ClaimController(ClaimService claimService, EvidenceService evidenceService) {
         this.claimService = claimService;
+        this.evidenceService = evidenceService;
     }
 
     /**
@@ -55,7 +62,8 @@ public class ClaimController {
         Claim claim = claimService.submitClaim(
                 request.getItemReportId(),
                 claimantId,
-                request.getDescription()
+                request.getDescription(),
+                request.getIdentifyingFeatures()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(ClaimResponse.fromEntity(claim));
     }
@@ -63,6 +71,7 @@ public class ClaimController {
     /**
      * Retrieves an individual claim by its ID.
      * Students may only view their own claims; administrators may view any claim.
+     * Never exposes reporter private details.
      * GET /api/claims/{id}
      */
     @GetMapping("/{id}")
@@ -76,7 +85,41 @@ public class ClaimController {
         if (principal.getRole() != Role.ADMIN && !claim.getClaimant().getId().equals(principal.getId())) {
             throw new AccessDeniedException("You are not authorized to view this claim.");
         }
-        return ResponseEntity.ok(ClaimResponse.fromEntity(claim));
+
+        Long claimantEvidenceId = evidenceService.getClaimEvidence(claim.getId())
+                .map(EvidenceFile::getId)
+                .orElse(null);
+
+        return ResponseEntity.ok(ClaimResponse.fromEntity(claim, claimantEvidenceId));
+    }
+
+    /**
+     * Retrieves full dual-party verification details for an individual claim.
+     * Accessible exclusively to administrators for verifying ownership before approval or rejection.
+     * GET /api/claims/{id}/verification
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}/verification")
+    public ResponseEntity<ClaimVerificationDetailsResponse> getClaimVerificationDetails(@PathVariable Long id) {
+        Claim claim = claimService.getClaimWithDetails(id);
+        ItemReport report = claim.getItemReport();
+
+        Long reporterEvidenceId = report != null
+                ? evidenceService.getReportEvidence(report.getId()).map(EvidenceFile::getId).orElse(null)
+                : null;
+
+        Long claimantEvidenceId = evidenceService.getClaimEvidence(claim.getId())
+                .map(EvidenceFile::getId)
+                .orElse(null);
+
+        ClaimVerificationDetailsResponse response = ClaimVerificationDetailsResponse.build(
+                claim,
+                report,
+                reporterEvidenceId,
+                claimantEvidenceId
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -127,7 +170,12 @@ public class ClaimController {
         }
 
         List<ClaimResponse> response = claims.stream()
-                .map(ClaimResponse::fromEntity)
+                .map(claim -> {
+                    Long evidenceId = evidenceService.getClaimEvidence(claim.getId())
+                            .map(EvidenceFile::getId)
+                            .orElse(null);
+                    return ClaimResponse.fromEntity(claim, evidenceId);
+                })
                 .toList();
         return ResponseEntity.ok(response);
     }
@@ -155,5 +203,16 @@ public class ClaimController {
         Claim rejected = claimService.rejectClaim(id);
         return ResponseEntity.ok(ClaimResponse.fromEntity(rejected));
     }
-}
 
+    /**
+     * Requests additional information from the student claimant.
+     * Restricted to administrators.
+     * PATCH /api/claims/{id}/request-info
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/request-info")
+    public ResponseEntity<ClaimResponse> requestMoreInfo(@PathVariable Long id) {
+        Claim updated = claimService.requestMoreInfo(id);
+        return ResponseEntity.ok(ClaimResponse.fromEntity(updated));
+    }
+}

@@ -19,6 +19,9 @@ import {
   fetchUnclaimedDetails,
 } from '../../services/analyticsApi'
 import { Container, Button, Badge, Card } from '../ui'
+import { fetchClaimVerificationDetails, requestMoreInfoForClaim } from '../../services/evidenceApi'
+import { PrivateEvidenceImage } from '../evidence/PrivateEvidenceImage'
+import type { ClaimVerificationDetails } from '../../types/evidence'
 import './AdminDashboard.css'
 
 export type AdminTab = 'overview' | 'reports' | 'claims'
@@ -59,6 +62,10 @@ export function AdminDashboard({
 
   // Claims Filter
   const [claimStatusFilter, setClaimStatusFilter] = useState<ClaimStatus>('PENDING')
+  const [expandedClaimId, setExpandedClaimId] = useState<number | null>(null)
+  const [verificationData, setVerificationData] = useState<Record<number, ClaimVerificationDetails>>({})
+  const [loadingVerificationId, setLoadingVerificationId] = useState<number | null>(null)
+  const [verificationError, setVerificationError] = useState<Record<number, string>>({})
 
   // Initial load & refresh function
   const loadDashboardData = async () => {
@@ -284,6 +291,63 @@ export function AdminDashboard({
       setProcessingClaimId(null)
     }
   }
+
+    // Action: Toggle Dual-Party Private Verification Review
+  const handleToggleVerification = async (claimId: number) => {
+    if (expandedClaimId === claimId) {
+      setExpandedClaimId(null);
+      return;
+    }
+    if (verificationData[claimId]) {
+      setExpandedClaimId(claimId);
+      return;
+    }
+
+    setLoadingVerificationId(claimId);
+    setVerificationError((prev) => ({ ...prev, [claimId]: '' }));
+    try {
+      const details = await fetchClaimVerificationDetails(claimId);
+      setVerificationData((prev) => ({ ...prev, [claimId]: details }));
+      setExpandedClaimId(claimId);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to load verification details.';
+      setVerificationError((prev) => ({ ...prev, [claimId]: msg }));
+      setFeedback({ type: 'error', message: msg });
+    } finally {
+      setLoadingVerificationId(null);
+    }
+  };
+
+  // Action: Request More Info from Claimant
+  const handleRequestMoreInfo = async (claimId: number, itemTitle: string) => {
+    if (!window.confirm(`Request additional evidence or information for claim #${claimId} ("${itemTitle}")?`)) {
+      return;
+    }
+
+    setProcessingClaimId(claimId);
+    setFeedback(null);
+
+    try {
+      const updatedClaim = await requestMoreInfoForClaim(claimId);
+      if (claimStatusFilter === 'PENDING') {
+        setClaims((prev) => prev.filter((c) => c.id !== claimId));
+      } else {
+        setClaims((prev) =>
+          prev.map((c) => (c.id === claimId ? { ...c, claimStatus: updatedClaim.claimStatus } : c))
+        );
+      }
+
+      setFeedback({
+        type: 'success',
+        message: `Claim #${claimId} updated to MORE_INFO_REQUESTED. Student will see guidance to provide additional evidence.`,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to request more info.';
+      setFeedback({ type: 'error', message: msg });
+    } finally {
+      setProcessingClaimId(null);
+    }
+  };
 
   // Helpers for badge styling
   const renderStatusBadge = (status: ItemStatus) => {
@@ -792,6 +856,7 @@ export function AdminDashboard({
                   <option value="PENDING">Pending Review (Action Required)</option>
                   <option value="APPROVED">Approved</option>
                   <option value="REJECTED">Rejected</option>
+                  <option value="MORE_INFO_REQUESTED">More Info Requested</option>
                 </select>
               </div>
 
@@ -858,9 +923,111 @@ export function AdminDashboard({
                         </div>
                       </div>
 
-                      {/* Action buttons on pending claims */}
-                      {isPending && (
+                      {/* Review Private Evidence Toggle Button */}
+                      <div className="admin-claim-evidence-toggle">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={loadingVerificationId === claim.id}
+                          onClick={() => handleToggleVerification(claim.id)}
+                        >
+                          {loadingVerificationId === claim.id
+                            ? 'Loading Evidence...'
+                            : expandedClaimId === claim.id
+                            ? 'Hide Private Evidence ▲'
+                            : '🔍 Review Private Evidence ▼'}
+                        </Button>
+                        {verificationError[claim.id] && (
+                          <div className="admin-claim-inline-error" role="alert">
+                            <span>⚠️ {verificationError[claim.id]}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Expanded Dual-Party Evidence Panel */}
+                      {expandedClaimId === claim.id && verificationData[claim.id] && (
+                        <div className="admin-dual-evidence-panel">
+                          {/* Finder Panel */}
+                          <div className="admin-evidence-party admin-evidence-party--finder">
+                            <div className="admin-evidence-party-header">
+                              <span className="admin-evidence-tag">Finder / Reporter Details</span>
+                              <span className="admin-evidence-party-name">
+                                {verificationData[claim.id].reporterName || `Student #${verificationData[claim.id].reporterId}`}
+                              </span>
+                            </div>
+                            <div className="admin-evidence-party-body">
+                              <div className="admin-evidence-item">
+                                <span className="admin-evidence-item-label">Public Description:</span>
+                                <p className="admin-evidence-item-text">{verificationData[claim.id].itemPublicDescription}</p>
+                              </div>
+                              <div className="admin-evidence-item admin-evidence-item--highlight">
+                                <span className="admin-evidence-item-label">🔒 Private Distinguishing Details:</span>
+                                <p className="admin-evidence-item-text">
+                                  {verificationData[claim.id].reporterPrivateDescription || 'No private distinguishing description provided.'}
+                                </p>
+                              </div>
+                              {verificationData[claim.id].reporterEvidenceId ? (
+                                <PrivateEvidenceImage
+                                  evidenceId={verificationData[claim.id].reporterEvidenceId!}
+                                  altText="Finder's private item photograph"
+                                  label="Finder's Private Photograph"
+                                />
+                              ) : (
+                                <div className="admin-no-photo-box">
+                                  <span>No private photograph attached by finder</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Claimant Panel */}
+                          <div className="admin-evidence-party admin-evidence-party--claimant">
+                            <div className="admin-evidence-party-header">
+                              <span className="admin-evidence-tag">Claimant Verification</span>
+                              <span className="admin-evidence-party-name">
+                                {verificationData[claim.id].claimantName || `Student #${verificationData[claim.id].claimantId}`}
+                              </span>
+                            </div>
+                            <div className="admin-evidence-party-body">
+                              <div className="admin-evidence-item">
+                                <span className="admin-evidence-item-label">Ownership Statement:</span>
+                                <p className="admin-evidence-item-text">{verificationData[claim.id].claimantDescription}</p>
+                              </div>
+                              <div className="admin-evidence-item admin-evidence-item--highlight">
+                                <span className="admin-evidence-item-label">🔒 Claimed Identifying Features:</span>
+                                <p className="admin-evidence-item-text">
+                                  {verificationData[claim.id].claimantIdentifyingFeatures || 'No specific features specified.'}
+                                </p>
+                              </div>
+                              {verificationData[claim.id].claimantEvidenceId ? (
+                                <PrivateEvidenceImage
+                                  evidenceId={verificationData[claim.id].claimantEvidenceId!}
+                                  altText="Claimant's submitted photograph"
+                                  label="Claimant's Photo Evidence"
+                                />
+                              ) : (
+                                <div className="admin-no-photo-box">
+                                  <span>No photo evidence attached by claimant</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action buttons on actionable claims */}
+                      {(isPending || claim.claimStatus === 'MORE_INFO_REQUESTED') && (
                         <div className="admin-claim-card-footer">
+                          {isPending && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={isProcessing}
+                              onClick={() => handleRequestMoreInfo(claim.id, claim.itemTitle || `Item #${claim.itemReportId}`)}
+                            >
+                              {isProcessing ? 'Processing...' : 'Request More Info'}
+                            </Button>
+                          )}
                           <Button
                             variant="danger"
                             size="sm"

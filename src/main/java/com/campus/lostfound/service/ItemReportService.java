@@ -31,16 +31,25 @@ public class ItemReportService {
 
     /**
      * Creates a new LOST or FOUND item report submitted by an existing user.
+     * Enforces that FOUND reports must contain private distinguishing details.
      *
      * @param report     item report details
      * @param reporterId ID of the user submitting the report
      * @return persisted ItemReport
      * @throws ResourceNotFoundException if the reporter user does not exist
+     * @throws BusinessRuleException     if a FOUND report lacks private distinguishing details
      */
     @Transactional
     public ItemReport createReport(ItemReport report, Long reporterId) {
         User reporter = userRepository.findById(reporterId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + reporterId));
+
+        // Enforce private description requirement for FOUND items
+        if (report.getReportType() == ReportType.FOUND) {
+            if (report.getPrivateDescription() == null || report.getPrivateDescription().trim().isEmpty()) {
+                throw new BusinessRuleException("Private identifying description is required for FOUND reports to assist in admin claim verification.");
+            }
+        }
 
         report.setReporter(reporter);
 
@@ -149,6 +158,9 @@ public class ItemReportService {
         existing.setDescription(updatedDetails.getDescription());
         existing.setCategory(updatedDetails.getCategory());
         existing.setLocation(updatedDetails.getLocation());
+        if (updatedDetails.getPrivateDescription() != null) {
+            existing.setPrivateDescription(updatedDetails.getPrivateDescription());
+        }
 
         return itemReportRepository.save(existing);
     }
@@ -172,4 +184,3 @@ public class ItemReportService {
         return itemReportRepository.save(report);
     }
 }
-

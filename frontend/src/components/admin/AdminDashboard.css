@@ -635,3 +635,121 @@
   font-size: var(--font-size-sm);
 }
 
+
+/* Dual-Party Verification Evidence Panel */
+.admin-claim-evidence-toggle {
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.admin-dual-evidence-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+@media (min-width: 860px) {
+  .admin-dual-evidence-panel {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.admin-evidence-party {
+  background: white;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.admin-evidence-party--finder {
+  border-top: 3px solid #3b82f6;
+}
+
+.admin-evidence-party--claimant {
+  border-top: 3px solid #10b981;
+}
+
+.admin-evidence-party-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+  padding-bottom: var(--space-2);
+}
+
+.admin-evidence-tag {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  color: var(--color-navy);
+}
+
+.admin-evidence-party-name {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.admin-evidence-party-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.admin-evidence-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-evidence-item--highlight {
+  background-color: #f1f5f9;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid #64748b;
+}
+
+.admin-evidence-item-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-navy);
+}
+
+.admin-evidence-item-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: var(--line-height-normal);
+}
+
+.admin-no-photo-box {
+  padding: var(--space-3);
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* Inline verification error */
+.admin-claim-inline-error {
+  margin-top: var(--space-2);
+  color: var(--color-status-danger-text);
+  background-color: var(--color-status-danger-bg);
+  border: 1px solid var(--color-status-danger-border);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}

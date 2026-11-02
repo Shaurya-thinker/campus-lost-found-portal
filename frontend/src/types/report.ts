@@ -21,6 +21,7 @@ export interface ItemReport {
 export interface CreateReportPayload {
   title: string
   description: string
+  privateDescription?: string
   category: string
   location: string
   reportType: ReportType

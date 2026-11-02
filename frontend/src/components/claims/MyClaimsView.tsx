@@ -4,6 +4,7 @@ import type { AuthUser } from '../../types/auth'
 import { fetchClaimsByClaimant } from '../../services/claimsApi'
 import { ApiError } from '../../services/reportsApi'
 import { Container, Card, Badge, Button } from '../ui'
+import { PrivateEvidenceImage } from '../evidence/PrivateEvidenceImage'
 import './MyClaimsView.css'
 
 export interface MyClaimsViewProps {
@@ -175,9 +176,10 @@ export function MyClaimsView({
             </p>
 
             {claims.map((claim) => {
-              let badgeVariant: 'warning' | 'success' | 'danger' = 'warning'
+              let badgeVariant: 'warning' | 'success' | 'danger' | 'info' = 'warning'
               if (claim.claimStatus === 'APPROVED') badgeVariant = 'success'
-              if (claim.claimStatus === 'REJECTED') badgeVariant = 'danger'
+              else if (claim.claimStatus === 'REJECTED') badgeVariant = 'danger'
+              else if (claim.claimStatus === 'MORE_INFO_REQUESTED') badgeVariant = 'warning'
 
               return (
                 <Card key={claim.id} className="claim-record-card">
@@ -203,12 +205,32 @@ export function MyClaimsView({
 
                   <div className="claim-record-desc-box">
                     <strong style={{ display: 'block', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-1)' }}>
-                      Submitted Proof of Ownership:
+                      Submitted Ownership Statement:
                     </strong>
                     <p>{claim.description}</p>
                   </div>
 
-                  <div className={`claim-record-status-note claim-record-status-note--${claim.claimStatus.toLowerCase()}`}>
+                  {claim.identifyingFeatures && (
+                    <div className="claim-record-desc-box" style={{ marginTop: 'var(--space-3)' }}>
+                      <strong style={{ display: 'block', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-1)' }}>
+                        🔒 Submitted Identifying Features (Private):
+                      </strong>
+                      <p>{claim.identifyingFeatures}</p>
+                    </div>
+                  )}
+
+                  {/* Render student's own uploaded photo evidence if present */}
+                  {claim.claimantEvidenceId && (
+                    <div style={{ marginTop: 'var(--space-3)' }}>
+                      <PrivateEvidenceImage
+                        evidenceId={claim.claimantEvidenceId}
+                        altText="My ownership photo evidence"
+                        label="My Submitted Photo Evidence"
+                      />
+                    </div>
+                  )}
+
+                  <div className={`claim-record-status-note claim-record-status-note--${claim.claimStatus.toLowerCase().replace(/_/g, '-')}`}>
                     {claim.claimStatus === 'PENDING' && (
                       <p>
                         &bull; Pending Review: Campus property staff will verify your details against the physical item.
@@ -221,7 +243,12 @@ export function MyClaimsView({
                     )}
                     {claim.claimStatus === 'REJECTED' && (
                       <p>
-                        &bull; Claim Closed: The submitted details could not be matched with the turned-in property.
+                        &bull; Claim Rejected: The submitted details did not match the item on record.
+                      </p>
+                    )}
+                    {claim.claimStatus === 'MORE_INFO_REQUESTED' && (
+                      <p style={{ color: '#b45309', fontWeight: 'var(--font-weight-medium)' }}>
+                        &bull; Action Required: The property desk has requested additional proof. Please visit the Campus Property Desk or reply with further details.
                       </p>
                     )}
                   </div>

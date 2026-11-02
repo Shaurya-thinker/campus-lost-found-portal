@@ -20,7 +20,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Service managing claims submitted for found items, verifying ownership, and handling approvals.
+ * Service managing claims submitted for found items, verifying ownership, and
+ * handling approvals.
  */
 @Service
 @Transactional(readOnly = true)
@@ -31,8 +32,8 @@ public class ClaimService {
     private final UserRepository userRepository;
 
     public ClaimService(ClaimRepository claimRepository,
-                        ItemReportRepository itemReportRepository,
-                        UserRepository userRepository) {
+            ItemReportRepository itemReportRepository,
+            UserRepository userRepository) {
         this.claimRepository = claimRepository;
         this.itemReportRepository = itemReportRepository;
         this.userRepository = userRepository;
@@ -53,6 +54,20 @@ public class ClaimService {
      */
     @Transactional
     public Claim submitClaim(Long itemReportId, Long claimantId, String description) {
+        return submitClaim(itemReportId, claimantId, description, null);
+    }
+
+    /**
+     * Submits a claim with explicit identifying features.
+     *
+     * @param itemReportId        ID of the item being claimed
+     * @param claimantId          ID of the claimant user
+     * @param description         ownership-verification description
+     * @param identifyingFeatures distinguishing marks or evidence
+     * @return persisted Claim
+     */
+    @Transactional
+    public Claim submitClaim(Long itemReportId, Long claimantId, String description, String identifyingFeatures) {
         ItemReport itemReport = itemReportRepository.findById(itemReportId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item report not found with id: " + itemReportId));
 
@@ -79,6 +94,7 @@ public class ClaimService {
         claim.setItemReport(itemReport);
         claim.setClaimant(claimant);
         claim.setDescription(description);
+        claim.setIdentifyingFeatures(identifyingFeatures);
         claim.setClaimDate(LocalDate.now());
         claim.setClaimStatus(ClaimStatus.PENDING);
 
@@ -94,6 +110,19 @@ public class ClaimService {
      */
     public Claim getClaimById(Long id) {
         return claimRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Claim not found with id: " + id));
+    }
+
+    /**
+     * Retrieves a claim with eagerly initialized report, reporter, and claimant.
+     * Prevents LazyInitializationException in administrative verification views.
+     *
+     * @param id claim ID
+     * @return fully initialized Claim entity
+     * @throws ResourceNotFoundException if claim is not found
+     */
+    public Claim getClaimWithDetails(Long id) {
+        return claimRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Claim not found with id: " + id));
     }
 
@@ -126,7 +155,7 @@ public class ClaimService {
     }
 
     /**
-     * Retrieves all claims matching a given status (PENDING, APPROVED, REJECTED).
+     * Retrieves all claims matching a given status.
      *
      * @param status claim status
      * @return list of matching claims
@@ -136,28 +165,31 @@ public class ClaimService {
     }
 
     /**
-     * Approves a pending claim and marks the corresponding item report as CLAIMED.
-     * Enforces:
-     * - Only a PENDING claim can be approved.
-     * - Once an item has an approved claim (no longer in REPORTED status), subsequent claims cannot be approved.
+     * Approves a pending or more-info-requested claim and marks the corresponding
+     * item report as CLAIMED.
      *
      * @param claimId ID of the claim to approve
      * @return updated Claim
      * @throws ResourceNotFoundException if claim is not found
-     * @throws BusinessRuleException     if claim is not pending or item is already claimed/returned
+     * @throws BusinessRuleException     if claim is not pending/more-info or item
+     *                                   is already claimed/returned
      */
     @Transactional
     public Claim approveClaim(Long claimId) {
         Claim claim = getClaimById(claimId);
 
-        if (claim.getClaimStatus() != ClaimStatus.PENDING) {
-            throw new BusinessRuleException("Only PENDING claims can be approved. Current status: " + claim.getClaimStatus());
+        if (claim.getClaimStatus() != ClaimStatus.PENDING
+                && claim.getClaimStatus() != ClaimStatus.MORE_INFO_REQUESTED) {
+            throw new BusinessRuleException(
+                    "Only PENDING or MORE_INFO_REQUESTED claims can be approved. Current status: "
+                            + claim.getClaimStatus());
         }
 
         ItemReport itemReport = claim.getItemReport();
         if (itemReport.getStatus() != ItemStatus.REPORTED) {
-            throw new BusinessRuleException("Cannot approve this claim: The associated item is no longer in REPORTED status (current: "
-                    + itemReport.getStatus() + ").");
+            throw new BusinessRuleException(
+                    "Cannot approve this claim: The associated item is no longer in REPORTED status (current: "
+                            + itemReport.getStatus() + ").");
         }
 
         claim.setClaimStatus(ClaimStatus.APPROVED);
@@ -168,24 +200,47 @@ public class ClaimService {
     }
 
     /**
-     * Rejects a pending claim.
-     * Enforces that only a PENDING claim can be rejected.
+     * Rejects a pending or more-info-requested claim.
      *
      * @param claimId ID of the claim to reject
      * @return updated Claim
      * @throws ResourceNotFoundException if claim is not found
-     * @throws BusinessRuleException     if claim is not pending
+     * @throws BusinessRuleException     if claim is not pending/more-info
      */
     @Transactional
     public Claim rejectClaim(Long claimId) {
         Claim claim = getClaimById(claimId);
 
-        if (claim.getClaimStatus() != ClaimStatus.PENDING) {
-            throw new BusinessRuleException("Only PENDING claims can be rejected. Current status: " + claim.getClaimStatus());
+        if (claim.getClaimStatus() != ClaimStatus.PENDING
+                && claim.getClaimStatus() != ClaimStatus.MORE_INFO_REQUESTED) {
+            throw new BusinessRuleException(
+                    "Only PENDING or MORE_INFO_REQUESTED claims can be rejected. Current status: "
+                            + claim.getClaimStatus());
         }
 
         claim.setClaimStatus(ClaimStatus.REJECTED);
         return claimRepository.save(claim);
     }
-}
 
+    /**
+     * Requests additional information from the student claimant.
+     *
+     * @param claimId ID of the claim
+     * @return updated Claim with MORE_INFO_REQUESTED status
+     * @throws ResourceNotFoundException if claim is not found
+     * @throws BusinessRuleException     if claim is not currently in PENDING status
+     */
+    @Transactional
+    public Claim requestMoreInfo(Long claimId) {
+        Claim claim = getClaimById(claimId);
+
+        if (claim.getClaimStatus() != ClaimStatus.PENDING) {
+            throw new BusinessRuleException(
+                    "Can only request additional info for claims in PENDING status. Current status: "
+                            + claim.getClaimStatus());
+        }
+
+        claim.setClaimStatus(ClaimStatus.MORE_INFO_REQUESTED);
+        return claimRepository.save(claim);
+    }
+}

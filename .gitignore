@@ -66,3 +66,8 @@ frontend/dist-ssr/
 frontend/*.local
 
 
+
+# Private evidence storage directories
+uploads/
+private_uploads/
+CampusLostFoundPrivateUploads/

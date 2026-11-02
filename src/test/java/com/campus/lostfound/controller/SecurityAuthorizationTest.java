@@ -1,6 +1,8 @@
 package com.campus.lostfound.controller;
 
 import com.campus.lostfound.config.SecurityConfig;
+import com.campus.lostfound.dto.ClaimVerificationDetailsResponse;
+import com.campus.lostfound.dto.ReportPrivateDetailsResponse;
 import com.campus.lostfound.entity.Claim;
 import com.campus.lostfound.entity.ItemReport;
 import com.campus.lostfound.entity.User;
@@ -16,6 +18,7 @@ import com.campus.lostfound.security.RestAuthenticationEntryPoint;
 import com.campus.lostfound.service.AnalyticsService;
 import com.campus.lostfound.service.AuthService;
 import com.campus.lostfound.service.ClaimService;
+import com.campus.lostfound.service.EvidenceService;
 import com.campus.lostfound.service.ItemReportService;
 import com.campus.lostfound.service.UserService;
 import org.junit.jupiter.api.DisplayName;
@@ -72,6 +75,9 @@ class SecurityAuthorizationTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private EvidenceService evidenceService;
 
     @Test
     @DisplayName("Public endpoint: GET /api/reports is accessible without authentication")
@@ -131,6 +137,24 @@ class SecurityAuthorizationTest {
 
     @Test
     @WithMockUser(roles = "STUDENT")
+    @DisplayName("Student authorization: Student CANNOT request more info on claims (403 Forbidden)")
+    void studentCannotRequestMoreInfoOnClaim() throws Exception {
+        mockMvc.perform(patch("/api/claims/1/request-info"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403));
+    }
+
+    @Test
+    @WithMockUser(roles = "STUDENT")
+    @DisplayName("Student authorization: Student CANNOT access admin claim verification details (403 Forbidden)")
+    void studentCannotAccessClaimVerificationDetails() throws Exception {
+        mockMvc.perform(get("/api/claims/1/verification"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403));
+    }
+
+    @Test
+    @WithMockUser(roles = "STUDENT")
     @DisplayName("Student authorization: Student CANNOT mark items returned (403 Forbidden)")
     void studentCannotMarkItemReturned() throws Exception {
         mockMvc.perform(patch("/api/reports/1/returned"))
@@ -158,6 +182,48 @@ class SecurityAuthorizationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    @DisplayName("Admin authorization: Administrator CAN access claim verification details (200 OK)")
+    void adminCanAccessClaimVerificationDetails() throws Exception {
+        User claimant = new User("24BCS10001", "Bob", "bob@campus.edu", "hash", Role.STUDENT);
+        claimant.setId(2L);
+        User reporter = new User("24BCS10002", "Alice", "alice@campus.edu", "hash", Role.STUDENT);
+        reporter.setId(1L);
+
+        ItemReport report = new ItemReport("Watch", "Silver watch", "Serial 123 on back", "Accessories", "Cafeteria", ReportType.FOUND, LocalDate.now(), ItemStatus.REPORTED, reporter);
+        report.setId(10L);
+
+        Claim claim = new Claim(report, claimant, "My silver watch", "Small scratch on clasp", LocalDate.now(), ClaimStatus.PENDING);
+        claim.setId(1L);
+
+        when(claimService.getClaimWithDetails(1L)).thenReturn(claim);
+
+        mockMvc.perform(get("/api/claims/1/verification"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.claimId").value(1))
+                .andExpect(jsonPath("$.reporterPrivateDescription").value("Serial 123 on back"))
+                .andExpect(jsonPath("$.claimantIdentifyingFeatures").value("Small scratch on clasp"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Admin authorization: Administrator CAN request more info on claims (200 OK)")
+    void adminCanRequestMoreInfoOnClaim() throws Exception {
+        User claimant = new User("24BCS10001", "Bob", "bob@campus.edu", "hash", Role.STUDENT);
+        claimant.setId(2L);
+        ItemReport report = new ItemReport("Watch", "Silver", "Accessories", "Cafeteria", ReportType.FOUND, LocalDate.now(), ItemStatus.REPORTED, claimant);
+        report.setId(10L);
+        Claim claim = new Claim(report, claimant, "Proof", LocalDate.now(), ClaimStatus.MORE_INFO_REQUESTED);
+        claim.setId(1L);
+
+        when(claimService.requestMoreInfo(1L)).thenReturn(claim);
+
+        mockMvc.perform(patch("/api/claims/1/request-info"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.claimStatus").value("MORE_INFO_REQUESTED"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Admin authorization: Administrator CAN access analytics (200 OK)")
     void adminCanAccessAnalytics() throws Exception {
         when(analyticsService.getUnclaimedItemCountsByLocation()).thenReturn(Collections.emptyList());
@@ -170,6 +236,14 @@ class SecurityAuthorizationTest {
     @DisplayName("Unauthenticated request to GET /api/auth/me returns 401 Unauthorized")
     void unauthenticatedCannotAccessAuthMe() throws Exception {
         mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401));
+    }
+
+    @Test
+    @DisplayName("Unauthenticated request to GET /api/evidence/1 returns 401 Unauthorized")
+    void unauthenticatedCannotAccessEvidence() throws Exception {
+        mockMvc.perform(get("/api/evidence/1"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
     }
@@ -229,4 +303,3 @@ class SecurityAuthorizationTest {
                 .andExpect(jsonPath("$.email").value("dave.miller@campus.edu"));
     }
 }
-
